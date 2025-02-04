@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Minus, ChevronsRight, ChevronsLeft } from 'lucide-react';
+import { Plus, Minus, ChevronsRight, ChevronsLeft, RotateCcw } from 'lucide-react';
 
 const Abacus = () => {
-  // Previous state management code remains the same
   const [base, setBase] = useState(10);
   const [rows, setRows] = useState(8);
   const [beadStates, setBeadStates] = useState([]);
   const [value, setValue] = useState(0);
 
-  // Previous useEffects and functions remain the same
   useEffect(() => {
     const initialBeads = Array(rows).fill().map(() => ({
       rightSide: base - 1,
@@ -17,6 +15,18 @@ const Abacus = () => {
     }));
     setBeadStates(initialBeads);
   }, [base, rows]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['ArrowUp', 'ArrowRight'].includes(e.key)) {
+        changeValue(1);
+      } else if (['ArrowDown', 'ArrowLeft'].includes(e.key)) {
+        changeValue(-1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [value, base, rows]);
 
   const updateBeadsFromValue = (newValue) => {
     let remainingValue = newValue;
@@ -46,6 +56,11 @@ const Abacus = () => {
     const newValue = Math.max(0, Math.min(value + increment, maxValue));
     setValue(newValue);
     updateBeadsFromValue(newValue);
+  };
+
+  const reset = () => {
+    setValue(0);
+    updateBeadsFromValue(0);
   };
 
   useEffect(() => {
@@ -104,7 +119,7 @@ const Abacus = () => {
           <div className="flex gap-2 items-center flex-1">
             <Button 
               variant="outline"
-              onClick={() => changeValue(-Math.pow(base, 0))}
+              onClick={() => changeValue(-1)}
               disabled={value <= 0}
             >
               <Minus className="h-4 w-4" />
@@ -112,13 +127,22 @@ const Abacus = () => {
             <span className="text-4xl font-bold text-slate-800 w-40 text-center">{value}</span>
             <Button 
               variant="outline"
-              onClick={() => changeValue(Math.pow(base, 0))}
+              onClick={() => changeValue(1)}
               disabled={value >= Math.pow(base, rows) - 1}
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
         </div>
+
+        <Button 
+          variant="outline" 
+          onClick={reset}
+          className="flex gap-2 items-center"
+        >
+          <RotateCcw className="h-4 w-4" />
+          Reset
+        </Button>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -152,7 +176,7 @@ const Abacus = () => {
                 {Array(row.leftSide).fill().map((_, i) => (
                   <div
                     key={`left-${i}`}
-                    className="w-8 h-8 rounded-full bg-blue-500 shadow-md transition-all"
+                    className="w-8 h-8 rounded-full bg-blue-500 shadow-md transition-transform duration-100 ease-in-out transform hover:scale-110"
                   />
                 ))}
               </div>
@@ -161,7 +185,7 @@ const Abacus = () => {
                 {Array(row.rightSide).fill().map((_, i) => (
                   <div
                     key={`right-${i}`}
-                    className="w-8 h-8 rounded-full bg-slate-300 shadow-sm transition-all"
+                    className="w-8 h-8 rounded-full bg-slate-300 shadow-sm transition-transform duration-100 ease-in-out transform hover:scale-110"
                   />
                 ))}
               </div>
