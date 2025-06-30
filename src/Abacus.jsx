@@ -18,8 +18,8 @@ const Abacus = () => {
 		const initialBeads = Array(rows)
 			.fill()
 			.map(() => ({
-				rightSide: base - 1,
-				leftSide: 0,
+				rightSide: 0,
+				leftSide: base - 1,
 			}));
 		setBeadStates(initialBeads);
 	}, [base, rows]);
@@ -41,16 +41,16 @@ const Abacus = () => {
 		const newBeads = [...beadStates];
 
 		newBeads.forEach((row) => {
-			row.leftSide = 0;
-			row.rightSide = base - 1;
+			row.rightSide = 0;
+			row.leftSide = base - 1;
 		});
 
 		for (let i = newBeads.length - 1; i >= 0; i--) {
 			const placeValue = Math.pow(base, i);
 			const digit = Math.floor(remainingValue / placeValue);
 			if (digit > 0) {
-				newBeads[i].leftSide = Math.min(digit, base - 1);
-				newBeads[i].rightSide = base - 1 - newBeads[i].leftSide;
+				newBeads[i].rightSide = Math.min(digit, base - 1);
+				newBeads[i].leftSide = base - 1 - newBeads[i].rightSide;
 				remainingValue -= digit * placeValue;
 			}
 		}
@@ -74,7 +74,7 @@ const Abacus = () => {
 	useEffect(() => {
 		let newValue = 0;
 		beadStates.forEach((row, rowIndex) => {
-			newValue += row.leftSide * Math.pow(base, rowIndex);
+			newValue += row.rightSide * Math.pow(base, rowIndex);
 		});
 		setValue(newValue);
 	}, [beadStates, base]);
@@ -83,17 +83,17 @@ const Abacus = () => {
 		const newBeads = [...beadStates];
 		const row = newBeads[rowIndex];
 
-		if (direction === 'left') {
-			const moveCount = moveAll ? row.rightSide : 1;
-			if (row.rightSide >= moveCount) {
-				row.leftSide += moveCount;
-				row.rightSide -= moveCount;
-			}
-		} else if (direction === 'right') {
+		if (direction === 'right') {
 			const moveCount = moveAll ? row.leftSide : 1;
 			if (row.leftSide >= moveCount) {
-				row.leftSide -= moveCount;
 				row.rightSide += moveCount;
+				row.leftSide -= moveCount;
+			}
+		} else if (direction === 'left') {
+			const moveCount = moveAll ? row.rightSide : 1;
+			if (row.rightSide >= moveCount) {
+				row.rightSide -= moveCount;
+				row.leftSide += moveCount;
 			}
 		}
 
@@ -106,8 +106,8 @@ const Abacus = () => {
 		setBase(newBase);
 		setBeadStates((prev) =>
 			prev.map((row) => ({
-				rightSide: newBase - 1,
-				leftSide: 0,
+				rightSide: 0,
+				leftSide: newBase - 1,
 			}))
 		);
 	};
@@ -196,7 +196,7 @@ const Abacus = () => {
 								onClick={() => moveBead(rowIndex, 'left')}
 								disabled={row.rightSide === 0}
 							>
-								<Plus className='h-4 w-4' />
+								<Minus className='h-4 w-4' />
 							</Button>
 						</div>
 
@@ -207,7 +207,7 @@ const Abacus = () => {
 									.map((_, i) => (
 										<div
 											key={`left-${i}`}
-											className='w-8 h-8 rounded-full bg-emerald-500 shadow-md transition-transform duration-100 ease-in-out transform hover:scale-110'
+											className='w-8 h-8 rounded-full bg-stone-300 shadow-sm transition-transform duration-100 ease-in-out transform hover:scale-110'
 										/>
 									))}
 							</div>
@@ -218,7 +218,7 @@ const Abacus = () => {
 									.map((_, i) => (
 										<div
 											key={`right-${i}`}
-											className='w-8 h-8 rounded-full bg-stone-300 shadow-sm transition-transform duration-100 ease-in-out transform hover:scale-110'
+											className='w-8 h-8 rounded-full bg-emerald-500 shadow-md transition-transform duration-100 ease-in-out transform hover:scale-110'
 										/>
 									))}
 							</div>
@@ -231,7 +231,7 @@ const Abacus = () => {
 								onClick={() => moveBead(rowIndex, 'right')}
 								disabled={row.leftSide === 0}
 							>
-								<Minus className='h-4 w-4' />
+								<Plus className='h-4 w-4' />
 							</Button>
 							<Button
 								size='sm'
